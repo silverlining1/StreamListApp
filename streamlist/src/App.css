@@ -233,3 +233,7 @@ body {
   font-size: 14px;
   color: #888;
 }
+
+.placeholder-box .placeholder-icon {
+    color: #E24B4A;
+}
