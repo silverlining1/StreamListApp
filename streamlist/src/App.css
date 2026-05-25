@@ -237,3 +237,101 @@ body {
 .placeholder-box .placeholder-icon {
     color: #E24B4A;
 }
+
+/* Add icon inside the existing Add button */
+.add-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.add-btn-icon {
+    font-size: 18px !important;
+}
+
+/* List item: hold actions on the right side */
+.list-item {
+    transition: background 0.15s, opacity 0.15s;
+}
+
+.list-item-completed .item-text {
+    text-decoration: line-through;
+    color: #aaa;
+}
+
+.list-item-completed {
+    background: #faf9f6;
+}
+
+/* Inline edit input — matches .text-input but smaller */
+.edit-input {
+    flex: 1;
+    height: 32px;
+    font-size: 14px;
+    font-family: 'DM Sans', sans-serif;
+    padding: 0 10px;
+    border-radius: 6px;
+    border: 1px solid #E24B4A;
+    background: #fff;
+    color: #1a1a1a;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(226, 75, 74, 0.12);
+}
+
+/* Action button cluster on each row */
+.item-actions {
+    display: flex;
+    gap: 2px;
+    align-items: center;
+}
+
+.icon-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #888;
+    transition: background 0.15s, color 0.15s;
+}
+
+.icon-btn .material-icons {
+    font-size: 20px;
+}
+
+.icon-btn:hover {
+    background: #f5f4f2;
+}
+
+.icon-btn-complete:hover {
+    color: #2e7d32;
+    background: #eaf5ec;
+}
+
+.icon-btn-edit:hover {
+    color: #1565c0;
+    background: #e8f0fa;
+}
+
+.icon-btn-delete:hover {
+    color: #E24B4A;
+    background: #fee;
+}
+
+.icon-btn-save {
+    color: #2e7d32;
+}
+
+.icon-btn-save:hover {
+    background: #eaf5ec;
+}
+
+.icon-btn-cancel:hover {
+    background: #f5f4f2;
+    color: #1a1a1a;
+}
