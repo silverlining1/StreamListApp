@@ -1,23 +1,55 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-// INT499 Week 2 — Assignment 1, Part 1
-// Adds: edit, delete, complete state per item • Material Icon action buttons
-// Keeps: console-box panel, input clear on submit, Enter-to-add
+// INT499 Week 3 — Assignment 1, Part 1
+// Adds: localStorage persistence (load on mount, save on every items change)
+// Keeps Week 2 features: edit, delete, complete, Material Icon action buttons,
+// console panel, input clear on submit, Enter-to-add
+
+const STORAGE_KEY = 'streamlist.items.v1';
+
+// Safe load: returns [] if storage empty, missing, or malformed
+const loadItemsFromStorage = () => {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) return [];
+        // Reset any in-progress edits from a prior session
+        return parsed.map(it => ({ ...it, isEditing: false }));
+    } catch (err) {
+        console.warn('[StreamList] Failed to read localStorage:', err);
+        return [];
+    }
+};
 
 function StreamListPage() {
     // ---- State ----
     // inputValue: text the user is currently typing in the main form
     const [inputValue, setInputValue] = useState('');
 
-    // items: each item is an object so we can track completion + edit mode
+    // items: lazy initializer pulls from localStorage so the list survives refresh
     // Shape: { id, text, completed, isEditing }
-    const [items, setItems] = useState([]);
+    const [items, setItems] = useState(loadItemsFromStorage);
 
     // editText: temporary buffer for the row currently being edited
     const [editText, setEditText] = useState('');
 
     // consoleLogs: in-app console panel (Week 1 carry-over)
-    const [consoleLogs, setConsoleLogs] = useState(['// Awaiting input...']);
+    const [consoleLogs, setConsoleLogs] = useState(() => {
+        const restored = loadItemsFromStorage();
+        return restored.length > 0
+            ? [`// Restored ${restored.length} item${restored.length === 1 ? '' : 's'} from localStorage.`]
+            : ['// Awaiting input...'];
+    });
+
+    // ---- Persistence: write items array to localStorage on every change ----
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        } catch (err) {
+            console.warn('[StreamList] Failed to write localStorage:', err);
+        }
+    }, [items]);
 
     const logToConsole = (message) => {
         console.log('[StreamList]', message);
@@ -210,9 +242,13 @@ function StreamListPage() {
 
             {/* Console panel */}
             <div className="console-box">
-                <div className="console-header">Console Output</div>
+                <div className="console-header">
+                    Console Output
+                </div>
                 <div className="console-body">
-                    {consoleLogs.map((line, i) => <div key={i}>{line}</div>)}
+                    {consoleLogs.map((log, i) => (
+                        <div key={i}>{log}</div>
+                    ))}
                 </div>
             </div>
         </div>
