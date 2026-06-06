@@ -120,6 +120,10 @@ body {
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .add-btn:hover {
@@ -236,14 +240,6 @@ body {
 
 .placeholder-box .placeholder-icon {
     color: #E24B4A;
-}
-
-/* Add icon inside the existing Add button */
-.add-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
 }
 
 .add-btn-icon {

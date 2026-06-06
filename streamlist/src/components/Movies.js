@@ -1,9 +1,4 @@
-import React, { useState, useEffect } from 'react';
-
-// INT499 Week 3 — Assignment 1, Part 1
-// Movies page: search TMDB, render results, persist last query + results to localStorage
-// API: https://api.themoviedb.org/3/search/movie  (v3, api_key query param)
-// API key is read from REACT_APP_TMDB_API_KEY (Create React App env convention)
+import React, { useState, useEffect, useRef } from 'react';
 
 const TMDB_API_KEY = process.env.REACT_APP_TMDB_API_KEY;
 const TMDB_BASE = 'https://api.themoviedb.org/3';
@@ -12,9 +7,18 @@ const POSTER_BASE = 'https://image.tmdb.org/t/p/w342';
 const QUERY_KEY = 'streamlist.movies.lastQuery.v1';
 const RESULTS_KEY = 'streamlist.movies.lastResults.v1';
 
+// Pure helpers — defined outside the component so they are not recreated on each render
+const formatYear = (dateString) => {
+    if (!dateString) return '';
+    return dateString.split('-')[0];
+};
+
+const formatRating = (vote) => {
+    if (typeof vote !== 'number' || vote === 0) return null;
+    return vote.toFixed(1);
+};
+
 function Movies() {
-    // Restore the previous search session from localStorage so a refresh
-    // does not blank out the page (per the assignment's "lost on refresh" fix).
     const [query, setQuery] = useState(() => {
         try {
             return localStorage.getItem(QUERY_KEY) || '';
@@ -35,17 +39,21 @@ function Movies() {
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const [hasSearched, setHasSearched] = useState(() => {
-        // If we restored a non-empty query from storage, treat the page as
-        // already in a "searched" state so the results render correctly.
-        try {
-            return Boolean(localStorage.getItem(QUERY_KEY));
-        } catch {
-            return false;
-        }
-    });
 
-    // Persist query + results whenever they change
+    // Derive initial hasSearched from the already-evaluated query — no extra localStorage read
+    const [hasSearched, setHasSearched] = useState(() => Boolean(query));
+
+    const abortControllerRef = useRef(null);
+
+    // Cancel any in-flight request when the component unmounts
+    useEffect(() => {
+        return () => {
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
+            }
+        };
+    }, []);
+
     useEffect(() => {
         try {
             localStorage.setItem(QUERY_KEY, query);
@@ -74,13 +82,20 @@ function Movies() {
             return;
         }
 
+        // Abort any previous in-flight request before starting a new one
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+        const controller = new AbortController();
+        abortControllerRef.current = controller;
+
         setError('');
         setIsLoading(true);
         setHasSearched(true);
 
         try {
             const url = `${TMDB_BASE}/search/movie?api_key=${encodeURIComponent(TMDB_API_KEY)}&query=${encodeURIComponent(trimmed)}&include_adult=false&language=en-US&page=1`;
-            const response = await fetch(url);
+            const response = await fetch(url, { signal: controller.signal });
             if (!response.ok) {
                 throw new Error(`TMDB request failed: ${response.status} ${response.statusText}`);
             }
@@ -91,6 +106,7 @@ function Movies() {
                 setError(`No results found for "${trimmed}".`);
             }
         } catch (err) {
+            if (err.name === 'AbortError') return;
             console.error('[Movies] TMDB error:', err);
             setError('Could not reach TMDB. Check your network and API key.');
             setResults([]);
@@ -110,16 +126,6 @@ function Movies() {
         } catch {
             /* noop */
         }
-    };
-
-    const formatYear = (dateString) => {
-        if (!dateString) return '';
-        return dateString.split('-')[0];
-    };
-
-    const formatRating = (vote) => {
-        if (typeof vote !== 'number' || vote === 0) return null;
-        return vote.toFixed(1);
     };
 
     return (
