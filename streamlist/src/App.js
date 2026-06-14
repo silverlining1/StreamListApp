@@ -7,6 +7,7 @@ import Cart from './components/Cart';
 import About from './components/About';
 import ErrorBoundary from './components/ErrorBoundary';
 import './App.css';
+import { register } from "./serviceWorkerRegistration";
 
 function App() {
   return (
@@ -27,5 +28,7 @@ function App() {
     </Router>
   );
 }
+
+register();
 
 export default App;
